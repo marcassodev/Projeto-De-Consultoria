@@ -1,7 +1,6 @@
-package consultoriamaisvida.persistencia;
+package consultoriamaisvida.model;
 
-
-public class Clientes {
+public class Cliente {
 
     String nome;
     int id;
@@ -18,7 +17,6 @@ public class Clientes {
         this.id = id;
     }
 
-    
     public String getNome() {
         return nome;
     }
@@ -26,7 +24,7 @@ public class Clientes {
     public int getId() {
         return id;
     }
-    
+
     public String getData() {
         return data;
     }

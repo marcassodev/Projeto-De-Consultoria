@@ -4,13 +4,14 @@
  */
 package consultoriamaisvida.gui;
 
-
-import consultoriamaisvida.persistencia.Consultoria;
-import consultoriamaisvida.persistencia.ConsultoriaMaisVidaDAO;
+import consultoriamaisvida.dao.ConsultoriaDAO;
+import consultoriamaisvida.dao.ClienteDAO;
+import consultoriamaisvida.model.Consultoria;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
+import java.sql.SQLException;
 
 /**
  *
@@ -18,34 +19,35 @@ import javax.swing.table.TableRowSorter;
  */
 public class CadastroConsultoria extends javax.swing.JFrame {
 
-    
     private void preencherTabela() {
-                ConsultoriaMaisVidaDAO dao = new ConsultoriaMaisVidaDAO();
-                
-                String idCliente = txtPesquisaIdCliente.getText();
-                List<Consultoria> listaConsultorias = dao.getConsultorias(idCliente);
-                //Criando a tabela sem rows
-                DefaultTableModel tabelaFilmes = (DefaultTableModel) tabelaConsultorias.getModel();
-                tabelaFilmes.setNumRows(0);
-                //Criando rows de acordo com os objetos existentes
-                tabelaConsultorias.setRowSorter(new TableRowSorter(tabelaFilmes));
+        try {
+            ConsultoriaDAO dao = new ConsultoriaDAO();
 
-                for (Consultoria c : listaConsultorias) {
-                    Object[] obj = new Object[] { 
-                        c.getId(),            
-                        c.getData(),   
-                        c.getNumero(),
-                        c.getIdCliente()
-                    };
-                    //Adicionando objeto nos rows
-                    tabelaFilmes.addRow(obj);
-                }    
+            String idCliente = txtPesquisaIdCliente.getText();
+            List<Consultoria> listaConsultorias = dao.buscarConsultoriasPorCliente(idCliente);
+            //Criando a tabela sem rows
+            DefaultTableModel tabelaFilmes = (DefaultTableModel) tabelaConsultorias.getModel();
+            tabelaFilmes.setNumRows(0);
+            //Criando rows de acordo com os objetos existentes
+            tabelaConsultorias.setRowSorter(new TableRowSorter(tabelaFilmes));
+
+            for (Consultoria c : listaConsultorias) {
+                Object[] obj = new Object[]{
+                    c.getId(),
+                    c.getData(),
+                    c.getNumero(),
+                    c.getIdCliente()
+                };
+                //Adicionando objeto nos rows
+                tabelaFilmes.addRow(obj);
             }
-    
-      
-      
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Erro ao buscar consultorias" + e.getMessage());
+        }
+    }
+
     public CadastroConsultoria() {
-        initComponents();    
+        initComponents();
         preencherTabela();
     }
 
@@ -370,63 +372,61 @@ public class CadastroConsultoria extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton5ActionPerformed
 
     private void btnSalvarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSalvarActionPerformed
-        Consultoria con = new Consultoria();
-        ConsultoriaMaisVidaDAO dao = new ConsultoriaMaisVidaDAO();
+        Consultoria consultoria = new Consultoria();
+        ConsultoriaDAO dao = new ConsultoriaDAO();
+        ClienteDAO clientedao = new ClienteDAO();
         int resposta;
-    //Verificando se as caixas de texto estão preenchidas para inserção de novo cadastro
-    if (txtID.getText().trim().isEmpty()) {
-        JOptionPane.showMessageDialog(this, "O campo 'ID Cliente' precisa ser preenchido!", "Erro", JOptionPane.ERROR_MESSAGE);
-        return;
-    } 
-    else if (txtData.getText().trim().isEmpty()) {
-        JOptionPane.showMessageDialog(this, "O campo 'Data' precisa ser preenchido!", "Erro", JOptionPane.ERROR_MESSAGE);
-        return;
-    } 
-    else if (txtSala.getText().trim().isEmpty()) {
-        JOptionPane.showMessageDialog(this, "O campo 'Sala' precisa ser preenchido!", "Erro", JOptionPane.ERROR_MESSAGE);
-        return;
-    } 
-    else {
-        JOptionPane.showMessageDialog(this, "Campos preenchidos corretamente!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-    }
-    
-    int idCliente;
-    try {
-    idCliente = Integer.parseInt(txtID.getText());
-    } catch (NumberFormatException e) {
-    JOptionPane.showMessageDialog(this, "O ID Cliente deve ser um número válido!", "Erro", JOptionPane.ERROR_MESSAGE);
-    return;
-    }
-    con.setData(txtData.getText());
-    con.setNumero(txtSala.getText());
 
-    dao.conectar();  // Chama conectar
-    
-    if (!dao.verificarClienteExiste(idCliente)) {
-    JOptionPane.showMessageDialog(this, "Erro: Cliente com ID " + idCliente + " não encontrado!", "Erro", JOptionPane.ERROR_MESSAGE);
-    dao.desconectar();
-    return;
-}
-    
-    con.setIdCliente(idCliente);
-    
-    resposta = dao.CadastrarCon(con);
+        //Verificando se as caixas de texto estão preenchidas para inserção de novo cadastro
+        if (txtID.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "O campo 'ID Cliente' precisa ser preenchido!", "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
+        } else if (txtData.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "O campo 'Data' precisa ser preenchido!", "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
+        } else if (txtSala.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "O campo 'Sala' precisa ser preenchido!", "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
+        } else {
+            JOptionPane.showMessageDialog(this, "Campos preenchidos corretamente!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+        }
 
-    if (resposta == 1) {
-        JOptionPane.showMessageDialog (null,"Consulta Cadastrada Com Sucesso");  
-         preencherTabela();
-    } else if (resposta == 1062) {
-        JOptionPane.showMessageDialog(null,"Consulta já foi cadastrada.");
-        //else para erro inexperado
-    } else {
-        JOptionPane.showMessageDialog(null,"Erro ao tentar inserir os dados.");
-    }
-    
+        int idCliente;
+        try {
+            idCliente = Integer.parseInt(txtID.getText());
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "O ID Cliente deve ser um número válido!", "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        consultoria.setData(txtData.getText());
+        consultoria.setNumero(txtSala.getText());
+
+        try {
+            if (!clientedao.verificarClienteExiste(idCliente)) {
+                JOptionPane.showMessageDialog(this, "Erro: Cliente com ID " + idCliente + " não encontrado!", "Erro", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            consultoria.setIdCliente(idCliente);
+
+            resposta = dao.cadastrarConsultoria(consultoria);
+
+            if (resposta == 1) {
+                JOptionPane.showMessageDialog(null, "Consulta Cadastrada Com Sucesso");
+                preencherTabela();
+            } else if (resposta == 1062) {
+                JOptionPane.showMessageDialog(null, "Consulta já foi cadastrada.");
+                //else para erro inexperado
+            } else {
+                JOptionPane.showMessageDialog(null, "Erro ao tentar inserir os dados.");
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao cadastrar consultoria" + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+        }
         txtID.setText("");
         txtSala.setText("");
         txtData.setText("");
-        
-        dao.desconectar();
+
     }//GEN-LAST:event_btnSalvarActionPerformed
 
     private void btnLimparActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimparActionPerformed
@@ -442,23 +442,27 @@ public class CadastroConsultoria extends javax.swing.JFrame {
     private void btnExcluirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExcluirActionPerformed
         int id = obterIdConsultoriaSelecionada();
 
-    if (id != -1) {
-        System.out.println("Tentando excluir a consultoria com ID: " + id); // 🔹 Debug
-
+        if (id == -1) {
+            JOptionPane.showMessageDialog(this, "Nenhum Cliente selecionado.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
         int confirmacao = JOptionPane.showConfirmDialog(this, "Tem certeza que deseja excluir esta consultoria?", "Confirmação", JOptionPane.YES_NO_OPTION);
-        
-        if (confirmacao == JOptionPane.YES_OPTION) {
-            ConsultoriaMaisVidaDAO dao = new ConsultoriaMaisVidaDAO();
-            if (dao.excluirConsultoria(id)) {
-                JOptionPane.showMessageDialog(this, "Consultoria excluída com sucesso.");
-                preencherTabela();
+
+        if (confirmacao != JOptionPane.YES_OPTION) {
+            return;
+        }
+        try {
+            ConsultoriaDAO dao = new ConsultoriaDAO();
+            boolean sucesso = dao.excluirConsultoria(id);
+
+            if (sucesso) {
+                JOptionPane.showMessageDialog(this, "Consultoria excluída com sucesso!");
             } else {
                 JOptionPane.showMessageDialog(this, "Erro ao excluir consultoria.", "Erro", JOptionPane.ERROR_MESSAGE);
             }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Erro a excluir consultoria" + e.getMessage(), "Erro", JOptionPane.WARNING_MESSAGE);
         }
-    } else {
-        JOptionPane.showMessageDialog(this, "Nenhuma consultoria selecionada.", "Aviso", JOptionPane.WARNING_MESSAGE);
-    }
     }//GEN-LAST:event_btnExcluirActionPerformed
 
     /**
@@ -524,16 +528,16 @@ public class CadastroConsultoria extends javax.swing.JFrame {
     private javax.swing.JTextField txtSala;
     // End of variables declaration//GEN-END:variables
 
-private int obterIdConsultoriaSelecionada() {
-    int linhaSelecionada = tabelaConsultorias.getSelectedRow();
-    
-    if (linhaSelecionada != -1) {
-        int colunaID = 0; // 🔹 Alterar se o ID não estiver na primeira coluna
-        int id = (int) tabelaConsultorias.getValueAt(linhaSelecionada, colunaID);
-        return id;
-    } else {
-        return -1;
+    private int obterIdConsultoriaSelecionada() {
+        int linhaSelecionada = tabelaConsultorias.getSelectedRow();
+
+        if (linhaSelecionada != -1) {
+            int colunaID = 0; // Alterar se o ID não estiver na primeira coluna
+            int id = (int) tabelaConsultorias.getValueAt(linhaSelecionada, colunaID);
+            return id;
+        } else {
+            return -1;
+        }
     }
-}
 
 }

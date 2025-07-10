@@ -1,5 +1,5 @@
 
-package consultoriamaisvida.persistencia;
+package consultoriamaisvida.model;
 
 public class Usuario {
     int id;

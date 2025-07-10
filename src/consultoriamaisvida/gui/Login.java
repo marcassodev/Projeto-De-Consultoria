@@ -4,11 +4,13 @@
  */
 package consultoriamaisvida.gui;
 
-import consultoriamaisvida.persistencia.Criptografia;
-import consultoriamaisvida.persistencia.SessaoUsuario;
-import consultoriamaisvida.persistencia.Usuario;
-import consultoriamaisvida.persistencia.UsuarioBD;
+import consultoriamaisvida.dao.UsuarioDAO;
+import consultoriamaisvida.util.Criptografia;
+import consultoriamaisvida.util.SessaoUsuario;
+import consultoriamaisvida.model.Usuario;
+import consultoriamaisvida.dao.UsuarioDAO;
 import javax.swing.JOptionPane;
+import java.sql.SQLException;
 
 /**
  *
@@ -179,38 +181,45 @@ public class Login extends javax.swing.JFrame {
 
     private void btnSalvarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSalvarActionPerformed
         Usuario usuario = new Usuario();
-                              
-                              // Atribuimos os valores Login e Senha baseado nos dados dos componentes JTextField
-                              usuario.setLogin(txtUsuario.getText());
-                              usuario.setSenha(Criptografia.getMD5(txtSenha.getText()));        
-                              
-                              // Exemplo de SQL Injection baseada em booleano
-                              usuario = UsuarioBD.validarUsuarioSeguro(usuario);
-                              
-                                
-                              // "Reescrevemos" os valores do objeto baseado na resposta do método
-                              // Se nenhum registro for encontrado, teremos um usuário NULO           
-                              if (usuario != null) {
-                                  SessaoUsuario.getInstance().setTipoUsuario(usuario.getTipo());
-                                  // Dependendo do tipo de usuário, levamos a uma página diferente
-                                  if( usuario.getTipo().equalsIgnoreCase("Admin") ) {
-                                      JOptionPane.showMessageDialog(null, "Bem-vindo, Administrador " + usuario.getLogin());
-                                      new Menu().setVisible(true);
-                                      this.dispose();
-                                  } else if ( usuario.getTipo().equalsIgnoreCase("Atendente") ) {
-                                      JOptionPane.showMessageDialog(null, "Olá, Atendente " + usuario.getLogin()+ "\nVocê tem permissão para cadastrar e listar os clientes e as consultorias do sistema! ");
-                                      new Menu().setVisible(true);
-                                      this.dispose();
-                                  } else if ( usuario.getTipo().equalsIgnoreCase("Professor") ){ 
-                                      JOptionPane.showMessageDialog(null, "Olá, Professor " + usuario.getLogin() + "\nVocê tem permissão para listar os clientes e adicionar consultorias no sistema! ");
-                                      new Menu().setVisible(true);
-                                      this.dispose();
-                                  }
-                                  
-                                  
-                              } else {
-                                  JOptionPane.showMessageDialog(null, "Erro de autenticação! Verifique se os dados estão corretos.");
-                              }
+
+// Captura os dados do formulário
+        usuario.setLogin(txtUsuario.getText());
+        usuario.setSenha(Criptografia.getMD5(txtSenha.getText()));
+
+        UsuarioDAO dao = new UsuarioDAO();
+
+        try {
+            usuario = dao.validarUsuario(usuario); // método atualizado da DAO
+
+            if (usuario != null) {
+                SessaoUsuario.getInstance().setTipoUsuario(usuario.getTipo());
+
+                String login = usuario.getLogin();
+                String tipo = usuario.getTipo().toLowerCase();
+
+                switch (tipo) {
+                    case "admin":
+                        JOptionPane.showMessageDialog(null, "Bem-vindo, Administrador " + login);
+                        break;
+                    case "atendente":
+                        JOptionPane.showMessageDialog(null, "Olá, Atendente " + login + "\nVocê tem permissão para cadastrar e listar os clientes e as consultorias do sistema!");
+                        break;
+                    case "professor":
+                        JOptionPane.showMessageDialog(null, "Olá, Professor " + login + "\nVocê tem permissão para listar os clientes e adicionar consultorias no sistema!");
+                        break;
+                    default:
+                        JOptionPane.showMessageDialog(null, "Tipo de usuário não reconhecido: " + usuario.getTipo());
+                        return;
+                }
+
+                new Menu().setVisible(true);
+                this.dispose();
+            } else {
+                JOptionPane.showMessageDialog(null, "Erro de autenticação! Verifique se os dados estão corretos.");
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao autenticar usuário: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_btnSalvarActionPerformed
 
     /**

@@ -1,7 +1,7 @@
 
-package consultoriamaisvida.persistencia;
+package consultoriamaisvida.model;
 
-public class Funcionarios {
+public class Funcionario {
     int id;
     String nome;
     String cpf;

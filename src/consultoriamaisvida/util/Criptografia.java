@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package consultoriamaisvida.persistencia;
+package consultoriamaisvida.util;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;

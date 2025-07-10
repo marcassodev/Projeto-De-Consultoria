@@ -4,14 +4,14 @@
  */
 package consultoriamaisvida.gui;
 
-
-import consultoriamaisvida.persistencia.ConsultoriaMaisVidaDAO;
-import consultoriamaisvida.persistencia.Funcionarios;
-import consultoriamaisvida.persistencia.SessaoUsuario;
+import consultoriamaisvida.dao.FuncionarioDAO;
+import consultoriamaisvida.model.Funcionario;
+import consultoriamaisvida.util.SessaoUsuario;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
+import java.sql.SQLException;
 
 /**
  *
@@ -20,57 +20,61 @@ import javax.swing.table.TableRowSorter;
 public class CadastroFuncionario extends javax.swing.JFrame {
 
     private void preencherTabela() {
-                ConsultoriaMaisVidaDAO dao = new ConsultoriaMaisVidaDAO();
-                
-                String areaAtuacao = txtPesquisaCargo.getText();
-                List<Funcionarios> listaFunc = dao.getFuncionarios(areaAtuacao);
-                //Criando a tabela sem rows
-                DefaultTableModel tabelaFun = (DefaultTableModel) tabelaFuncionarios.getModel();
-                tabelaFun.setNumRows(0);
-                //Criando rows de acordo com os objetos existentes
-                tabelaFuncionarios.setRowSorter(new TableRowSorter(tabelaFun));
 
-                for (Funcionarios f : listaFunc) {
-                    Object[] obj = new Object[] {    
-                        f.getId(),
-                        f.getNome(),   
-                        f.getCpf(),
-                        f.getAreaAtuacao(),
-                        f.getTelefone()
-                    };
-                    //Adicionando objeto nos rows
-                    tabelaFun.addRow(obj);
-                }    
+        try {
+            FuncionarioDAO dao = new FuncionarioDAO();
+
+            String areaAtuacao = txtPesquisaCargo.getText();
+            List<Funcionario> listaFunc = dao.buscarFuncionariosPorArea(areaAtuacao);
+            //Criando a tabela sem rows
+            DefaultTableModel tabelaFun = (DefaultTableModel) tabelaFuncionarios.getModel();
+            tabelaFun.setNumRows(0);
+            //Criando rows de acordo com os objetos existentes
+            tabelaFuncionarios.setRowSorter(new TableRowSorter(tabelaFun));
+
+            for (Funcionario f : listaFunc) {
+                Object[] obj = new Object[]{
+                    f.getId(),
+                    f.getNome(),
+                    f.getCpf(),
+                    f.getAreaAtuacao(),
+                    f.getTelefone()
+                };
+                //Adicionando objeto nos rows
+                tabelaFun.addRow(obj);
             }
-    
-    private int obterIdFuncionarioSelecionado() {
-    // Obter a linha selecionada da tabela
-    int linhaSelecionada = tabelaFuncionarios.getSelectedRow();
-    
-    // Verificar se uma linha foi selecionada
-    if (linhaSelecionada != -1) {
-        // Supondo que o ID esteja na primeira coluna da tabela (índice 0)
-        int id = (int) tabelaFuncionarios.getValueAt(linhaSelecionada, 0);
-        return id;
-    } else {
-        // Se nenhuma linha for selecionada, retorna -1
-        return -1;
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Erro ao buscar funcionarios" + e.getMessage());
+        }
     }
-}
-    
+
+    private int obterIdFuncionarioSelecionado() {
+        // Obter a linha selecionada da tabela
+        int linhaSelecionada = tabelaFuncionarios.getSelectedRow();
+
+        // Verificar se uma linha foi selecionada
+        if (linhaSelecionada != -1) {
+            // Supondo que o ID esteja na primeira coluna da tabela (índice 0)
+            int id = (int) tabelaFuncionarios.getValueAt(linhaSelecionada, 0);
+            return id;
+        } else {
+            // Se nenhuma linha for selecionada, retorna -1
+            return -1;
+        }
+    }
+
     public CadastroFuncionario() {
         initComponents();
         preencherTabela();
-        
+
         String tipoUsuario = SessaoUsuario.getInstance().getTipoUsuario();
 
         if (tipoUsuario.equalsIgnoreCase("Professor")) {
-        btnSalvar.setEnabled(false);
-        btnExcluir.setEnabled(false);
-        }
-        else if (tipoUsuario.equalsIgnoreCase("Atendente")) {
-        btnSalvar.setEnabled(false);
-        btnExcluir.setEnabled(false);
+            btnSalvar.setEnabled(false);
+            btnExcluir.setEnabled(false);
+        } else if (tipoUsuario.equalsIgnoreCase("Atendente")) {
+            btnSalvar.setEnabled(false);
+            btnExcluir.setEnabled(false);
         }
     }
 
@@ -423,57 +427,52 @@ public class CadastroFuncionario extends javax.swing.JFrame {
     }//GEN-LAST:event_btnSairActionPerformed
 
     private void btnSalvarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSalvarActionPerformed
-        Funcionarios func = new Funcionarios();
-        ConsultoriaMaisVidaDAO dao = new ConsultoriaMaisVidaDAO();
+        Funcionario func = new Funcionario();
+        FuncionarioDAO dao = new FuncionarioDAO();
         int resposta;
 
-    //Verificando se as caixas de texto estão preenchidas para inserção de novo cadastro
-    if (txtNome.getText().trim().isEmpty()) {
-        JOptionPane.showMessageDialog(this, "O campo 'Nome' precisa ser preenchido!", "Erro", JOptionPane.ERROR_MESSAGE);
-        return;
-    } 
-    else if (txtCpf.getText().trim().isEmpty()) {
-        JOptionPane.showMessageDialog(this, "O campo 'Cpf' precisa ser preenchido!", "Erro", JOptionPane.ERROR_MESSAGE);
-        return;
-    } 
-    else if (txtCargo.getText().trim().isEmpty()) {
-        JOptionPane.showMessageDialog(this, "O campo 'Cargo' precisa ser preenchido!", "Erro", JOptionPane.ERROR_MESSAGE);
-        return;
-    } 
-    else if (txtTelefone.getText().trim().isEmpty()) {
-        JOptionPane.showMessageDialog(this, "O campo 'Telefone' precisa ser preenchido!", "Erro", JOptionPane.ERROR_MESSAGE);
-        return;
-    } 
-    else {
-        JOptionPane.showMessageDialog(this, "Campos preenchidos corretamente!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-    }
-    
-    func.setNome(txtNome.getText());
-    func.setCpf(txtCpf.getText());
-    func.setAreaAtuacao(txtCargo.getText()); 
-    func.setTelefone(txtTelefone.getText());
-    
-    dao.conectar();  // Chama conectar
-    
-    resposta = dao.CadastrarFunc(func);
-    
-    
-    if (resposta == 1) {
-        JOptionPane.showMessageDialog (null,"Funcionario Cadastrado Com Sucesso");
-         preencherTabela();
-    } else if (resposta == 1062) {
-        JOptionPane.showMessageDialog(null,"Funcionario já foi cadastrado.");
-        //else para erro inexperado
-    } else {
-        JOptionPane.showMessageDialog(null,"Erro ao tentar inserir os dados.");
-    }
-    
+        //Verificando se as caixas de texto estão preenchidas para inserção de novo cadastro
+        if (txtNome.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "O campo 'Nome' precisa ser preenchido!", "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
+        } else if (txtCpf.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "O campo 'Cpf' precisa ser preenchido!", "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
+        } else if (txtCargo.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "O campo 'Cargo' precisa ser preenchido!", "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
+        } else if (txtTelefone.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "O campo 'Telefone' precisa ser preenchido!", "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
+        } else {
+            JOptionPane.showMessageDialog(this, "Campos preenchidos corretamente!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+        }
+
+        func.setNome(txtNome.getText());
+        func.setCpf(txtCpf.getText());
+        func.setAreaAtuacao(txtCargo.getText());
+        func.setTelefone(txtTelefone.getText());
+
+        try {
+            resposta = dao.cadastrarFuncionario(func);
+
+            if (resposta == 1) {
+                JOptionPane.showMessageDialog(null, "Funcionario Cadastrado Com Sucesso");
+                preencherTabela();
+            } else if (resposta == 1062) {
+                JOptionPane.showMessageDialog(null, "Funcionario já foi cadastrado.");
+                //else para erro inexperado
+            } else {
+                JOptionPane.showMessageDialog(null, "Erro ao tentar inserir os dados.");
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao cadastrar funcionário" + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+        }
+
         txtNome.setText("");
         txtCpf.setText("");
         txtCargo.setText("");
         txtTelefone.setText("");
-        
-        dao.desconectar();   
     }//GEN-LAST:event_btnSalvarActionPerformed
 
     private void btnLimparActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimparActionPerformed
@@ -490,23 +489,28 @@ public class CadastroFuncionario extends javax.swing.JFrame {
     private void btnExcluirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExcluirActionPerformed
         int id = obterIdFuncionarioSelecionado();
 
-    if (id != -1) {
-        System.out.println("Tentando excluir a consultoria com ID: " + id);
+        if (id == -1) {
+            JOptionPane.showMessageDialog(this, "Nenhum Cliente selecionado.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
 
         int confirmacao = JOptionPane.showConfirmDialog(this, "Tem certeza que deseja excluir esse Funcionario?", "Confirmação", JOptionPane.YES_NO_OPTION);
-        
-        if (confirmacao == JOptionPane.YES_OPTION) {
-            ConsultoriaMaisVidaDAO dao = new ConsultoriaMaisVidaDAO();
-            if (dao.excluirFuncionario(id)) {
-                JOptionPane.showMessageDialog(this, "Funcionario excluído com sucesso.");
-                preencherTabela();
-            } else {
-                JOptionPane.showMessageDialog(this, "Erro ao excluir funcionario.", "Erro", JOptionPane.ERROR_MESSAGE);
-            }
+
+        if (confirmacao != JOptionPane.YES_OPTION) {
+            return;
         }
-    } else {
-        JOptionPane.showMessageDialog(this, "Nenhum funcionario selecionado.", "Aviso", JOptionPane.WARNING_MESSAGE);
-    }
+        try {
+            FuncionarioDAO dao = new FuncionarioDAO();
+            boolean sucesso = dao.excluirFuncionario(id);
+
+            if (sucesso) {
+                JOptionPane.showMessageDialog(this, "Cliente excluido com sucesso");
+            } else {
+                JOptionPane.showMessageDialog(this, "Erro a excluir cliente.", "Erro", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao excluir funcionário" + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_btnExcluirActionPerformed
 
     /**
@@ -574,4 +578,3 @@ public class CadastroFuncionario extends javax.swing.JFrame {
     private javax.swing.JFormattedTextField txtTelefone;
     // End of variables declaration//GEN-END:variables
 }
-

@@ -1,4 +1,4 @@
-package consultoriamaisvida.persistencia;
+package consultoriamaisvida.model;
 
 public class Consultoria {
     int id;
@@ -38,6 +38,4 @@ public class Consultoria {
     public void setId(int id) {
         this.id = id;
     }
-    
-    
 }

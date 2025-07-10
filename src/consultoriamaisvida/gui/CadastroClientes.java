@@ -1,15 +1,13 @@
 package consultoriamaisvida.gui;
 
-
-import consultoriamaisvida.persistencia.Clientes;
-import consultoriamaisvida.persistencia.ConsultoriaMaisVidaDAO;
-import consultoriamaisvida.persistencia.SessaoUsuario;
+import consultoriamaisvida.dao.ClienteDAO;
+import consultoriamaisvida.model.Cliente;
+import consultoriamaisvida.util.SessaoUsuario;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
-
-
+import java.sql.SQLException;
 
 /**
  *
@@ -18,70 +16,58 @@ import javax.swing.table.TableRowSorter;
 public class CadastroClientes extends javax.swing.JFrame {
 
     private void preencherTabela() {
-                ConsultoriaMaisVidaDAO dao = new ConsultoriaMaisVidaDAO();
-                
-                String nome = txtPesquisaNome.getText();
-                List<Clientes> listaClientes = dao.getClientes(nome);
-                //Criando a tabela sem rows
-                DefaultTableModel tabelaCli = (DefaultTableModel) tabelaClientes.getModel();
-                tabelaCli.setNumRows(0);
-                //Criando rows de acordo com os objetos existentes
-                tabelaClientes.setRowSorter(new TableRowSorter(tabelaCli));
+        try {
+            ClienteDAO dao = new ClienteDAO();
 
-                for (Clientes c : listaClientes) {
-                    Object[] obj = new Object[] { 
-                        c.getId(),            
-                        c.getNome(),   
-                        c.getData(), 
-                        c.getRg(),
-                        c.getCpf(),
-                        c.getTelefone()
-                    };
-                    //Adicionando objeto nos rows
-                    tabelaCli.addRow(obj);
-                }    
+            String nome = txtPesquisaNome.getText();
+            List<Cliente> listaClientes = dao.buscarClientesPorNome(nome);
+            //Criando a tabela sem rows
+            DefaultTableModel tabelaCli = (DefaultTableModel) tabelaClientes.getModel();
+            tabelaCli.setNumRows(0);
+            //Criando rows de acordo com os objetos existentes
+            tabelaClientes.setRowSorter(new TableRowSorter(tabelaCli));
+
+            for (Cliente c : listaClientes) {
+                Object[] obj = new Object[]{
+                    c.getId(),
+                    c.getNome(),
+                    c.getData(),
+                    c.getRg(),
+                    c.getCpf(),
+                    c.getTelefone()
+                };
+                //Adicionando objeto nos rows
+                tabelaCli.addRow(obj);
             }
-    
-    private int obterIdClienteSelecionado() {
-    // Obter a linha selecionada da tabela
-    int linhaSelecionada = tabelaClientes.getSelectedRow();
-    
-    // Verificar se uma linha foi selecionada
-    if (linhaSelecionada != -1) {
-        // Supondo que o ID esteja na primeira coluna da tabela (índice 0)
-        int id = (int) tabelaClientes.getValueAt(linhaSelecionada, 0);
-        return id;
-    } else {
-        // Se nenhuma linha for selecionada, retorna -1
-        return -1;
-    }
-}
-    private void excluirClienteAtualizarTabela() {
-    // Obter o ID do cliente selecionado
-    int idCliente = obterIdClienteSelecionado();
-
-    if (idCliente != -1) {
-        ConsultoriaMaisVidaDAO dao = new ConsultoriaMaisVidaDAO();
-
-        // Excluir o cliente
-        boolean excluiu = dao.excluirCliente(idCliente);
-        if (excluiu) {
-            // Atualiza a tabela após a exclusão
-            JOptionPane.showMessageDialog(this, "Cliente excluído com sucesso!");
-            preencherTabela();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Erro ao buscar clientes" + e.getMessage());
         }
-     }
     }
-    
+
+    private int obterIdClienteSelecionado() {
+        // Obter a linha selecionada da tabela
+        int linhaSelecionada = tabelaClientes.getSelectedRow();
+
+        // Verificar se uma linha foi selecionada
+        if (linhaSelecionada != -1) {
+            // Supondo que o ID esteja na primeira coluna da tabela (índice 0)
+            int id = (int) tabelaClientes.getValueAt(linhaSelecionada, 0);
+            return id;
+        } else {
+            // Se nenhuma linha for selecionada, retorna -1
+            return -1;
+        }
+    }
+
     public CadastroClientes() {
         initComponents();
         preencherTabela();
-        
+
         String tipoUsuario = SessaoUsuario.getInstance().getTipoUsuario();
 
         if (tipoUsuario.equalsIgnoreCase("Professor")) {
-        btnSalvar.setEnabled(false);
-        btnExcluir.setEnabled(false);
+            btnSalvar.setEnabled(false);
+            btnExcluir.setEnabled(false);
         }
     }
 
@@ -441,7 +427,7 @@ public class CadastroClientes extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnCadastroClienteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCadastroClienteActionPerformed
-        
+
     }//GEN-LAST:event_btnCadastroClienteActionPerformed
 
     private void btnMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMenuActionPerformed
@@ -467,61 +453,55 @@ public class CadastroClientes extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton5ActionPerformed
 
     private void btnSalvarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSalvarActionPerformed
-        Clientes cli = new Clientes();
-        ConsultoriaMaisVidaDAO dao = new ConsultoriaMaisVidaDAO();
+        Cliente cliente = new Cliente();
+        ClienteDAO dao = new ClienteDAO();
         int resposta;
-    //Verificando se as caixas de texto estão preenchidas para inserção de novo cadastro
-    if (txtNome.getText().trim().isEmpty()) {
-        JOptionPane.showMessageDialog(this, "O campo 'Nome' precisa ser preenchido!", "Erro", JOptionPane.ERROR_MESSAGE);
-        return;
-    } 
-    else if (fmtTxtData.getText().trim().isEmpty()) {
-        JOptionPane.showMessageDialog(this, "O campo 'Data' precisa ser preenchido!", "Erro", JOptionPane.ERROR_MESSAGE);
-        return;
-    } 
-    else if (txtRg.getText().trim().isEmpty()) {
-        JOptionPane.showMessageDialog(this, "O campo 'Rg' precisa ser preenchido!", "Erro", JOptionPane.ERROR_MESSAGE);
-        return;
-    } 
-    else if (txtCpf.getText().trim().isEmpty()) {
-        JOptionPane.showMessageDialog(this, "O campo 'Cpf' precisa ser preenchido!", "Erro", JOptionPane.ERROR_MESSAGE);
-        return;
-    } 
-    else if (ftdTxtTelefone.getText().trim().isEmpty()) {
-        JOptionPane.showMessageDialog(this, "O campo 'Telefone' precisa ser preenchido!", "Erro", JOptionPane.ERROR_MESSAGE);
-        return;
-    } 
-    else {
-        JOptionPane.showMessageDialog(this, "Campos preenchidos corretamente!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-    }
-    
-    cli.setNome(txtNome.getText());
-    cli.setData(fmtTxtData.getText());
-    cli.setRg(txtRg.getText());
-    cli.setCpf(txtCpf.getText());
-    cli.setTelefone(ftdTxtTelefone.getText());
-    
-    dao.conectar();  // Chama conectar
-    
-    resposta = dao.CadastrarCliente(cli);
-    
-    if (resposta == 1) {
-        JOptionPane.showMessageDialog (null,"Cliente Cadastrado Com Sucesso");  
-        preencherTabela();
-    } else if (resposta == 1062) {
-        JOptionPane.showMessageDialog(null,"Cliente já foi cadastrado.");
-        //else para erro inexperado
-    } else {
-        JOptionPane.showMessageDialog(null,"Erro ao tentar inserir os dados.");
-    }
-    
+        //Verificando se as caixas de texto estão preenchidas para inserção de novo cadastro
+        if (txtNome.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "O campo 'Nome' precisa ser preenchido!", "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
+        } else if (fmtTxtData.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "O campo 'Data' precisa ser preenchido!", "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
+        } else if (txtRg.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "O campo 'Rg' precisa ser preenchido!", "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
+        } else if (txtCpf.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "O campo 'Cpf' precisa ser preenchido!", "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
+        } else if (ftdTxtTelefone.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "O campo 'Telefone' precisa ser preenchido!", "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
+        } else {
+            JOptionPane.showMessageDialog(this, "Campos preenchidos corretamente!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+        }
+
+        cliente.setNome(txtNome.getText());
+        cliente.setData(fmtTxtData.getText());
+        cliente.setRg(txtRg.getText());
+        cliente.setCpf(txtCpf.getText());
+        cliente.setTelefone(ftdTxtTelefone.getText());
+
+        try {
+            resposta = dao.cadastrarCliente(cliente);
+
+            if (resposta == 1) {
+                JOptionPane.showMessageDialog(null, "Cliente Cadastrado Com Sucesso");
+                preencherTabela();
+            } else if (resposta == 1062) {
+                JOptionPane.showMessageDialog(null, "Cliente já foi cadastrado.");
+                //else para erro inexperado
+            } else {
+                JOptionPane.showMessageDialog(null, "Erro ao tentar inserir os dados.");
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao cadastrar cliente" + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+        }
         txtNome.setText("");
         fmtTxtData.setText("");
         txtRg.setText("");
         txtCpf.setText("");
         ftdTxtTelefone.setText("");
-        
-        dao.desconectar();
     }//GEN-LAST:event_btnSalvarActionPerformed
 
     private void btnLimparActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimparActionPerformed
@@ -539,30 +519,34 @@ public class CadastroClientes extends javax.swing.JFrame {
     private void btnExcluirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExcluirActionPerformed
         int id = obterIdClienteSelecionado();
 
-        if (id != -1) {
-            System.out.println("Tentando excluir o cliente com ID: " + id);
+        if (id == -1) {
+            JOptionPane.showMessageDialog(this, "Nenhum Cliente selecionado.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
 
         int confirmacao = JOptionPane.showConfirmDialog(this, "Tem certeza que deseja excluir esse Cliente?", "Confirmação", JOptionPane.YES_NO_OPTION);
-        
-        if (confirmacao == JOptionPane.YES_OPTION) {
-            ConsultoriaMaisVidaDAO dao = new ConsultoriaMaisVidaDAO();
-            if (dao.excluirCliente(id)) {
-                JOptionPane.showMessageDialog(this, "Cliente excluído com sucesso.");
-                preencherTabela();
-            } else {
-                JOptionPane.showMessageDialog(this, "Erro ao excluir Cliente.", "Erro", JOptionPane.ERROR_MESSAGE);
-            }
+
+        if (confirmacao != JOptionPane.YES_OPTION) {
+            return;
         }
-    } else {
-        JOptionPane.showMessageDialog(this, "Nenhum Cliente selecionado.", "Aviso", JOptionPane.WARNING_MESSAGE);
-    }
+        try {
+            ClienteDAO dao = new ClienteDAO();
+            boolean sucesso = dao.excluirCliente(id);
+
+            if (sucesso) {
+                JOptionPane.showMessageDialog(this, "Cliente excluido com sucesso");
+            } else {
+                JOptionPane.showMessageDialog(this, "Erro a excluir cliente.", "Erro", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao excluir cliente" + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_btnExcluirActionPerformed
 
     private void txtPesquisaNomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtPesquisaNomeActionPerformed
         preencherTabela();
     }//GEN-LAST:event_txtPesquisaNomeActionPerformed
 
-    
     /**
      * @param args the command line arguments
      */
