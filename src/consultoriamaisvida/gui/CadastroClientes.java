@@ -8,6 +8,9 @@ import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  *
@@ -121,8 +124,6 @@ public class CadastroClientes extends javax.swing.JFrame {
         jLabel1.setForeground(new java.awt.Color(255, 255, 255));
         jLabel1.setText("Vida");
 
-        btnMenu.setBackground(new java.awt.Color(255, 255, 255));
-        btnMenu.setForeground(new java.awt.Color(0, 0, 0));
         btnMenu.setText("Menu");
         btnMenu.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -130,8 +131,6 @@ public class CadastroClientes extends javax.swing.JFrame {
             }
         });
 
-        btnCadastroCliente.setBackground(new java.awt.Color(255, 255, 255));
-        btnCadastroCliente.setForeground(new java.awt.Color(0, 0, 0));
         btnCadastroCliente.setText("Cadastro De Cliente");
         btnCadastroCliente.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -139,8 +138,6 @@ public class CadastroClientes extends javax.swing.JFrame {
             }
         });
 
-        btnFuncionario.setBackground(new java.awt.Color(255, 255, 255));
-        btnFuncionario.setForeground(new java.awt.Color(0, 0, 0));
         btnFuncionario.setText("Novo Funcionario");
         btnFuncionario.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -148,8 +145,6 @@ public class CadastroClientes extends javax.swing.JFrame {
             }
         });
 
-        btnConsultoria.setBackground(new java.awt.Color(255, 255, 255));
-        btnConsultoria.setForeground(new java.awt.Color(0, 0, 0));
         btnConsultoria.setText("Nova Consultoria");
         btnConsultoria.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -169,14 +164,11 @@ public class CadastroClientes extends javax.swing.JFrame {
 
         jLabel3.setBackground(new java.awt.Color(0, 0, 0));
         jLabel3.setFont(new java.awt.Font("Segoe UI", 2, 30)); // NOI18N
-        jLabel3.setForeground(new java.awt.Color(0, 0, 0));
         jLabel3.setText("Cadastro De Clientes");
 
-        jLabel8.setForeground(new java.awt.Color(0, 0, 0));
         jLabel8.setText("Nome:");
 
-        jLabel9.setForeground(new java.awt.Color(0, 0, 0));
-        jLabel9.setText("Data do Cadastro:");
+        jLabel9.setText("Data de Nascimento:");
 
         fmtTxtData.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.DateFormatter(java.text.DateFormat.getDateInstance(java.text.DateFormat.SHORT))));
         fmtTxtData.addActionListener(new java.awt.event.ActionListener() {
@@ -186,15 +178,12 @@ public class CadastroClientes extends javax.swing.JFrame {
         });
 
         jLabel11.setBackground(new java.awt.Color(0, 0, 0));
-        jLabel11.setForeground(new java.awt.Color(0, 0, 0));
         jLabel11.setText("Telefone:");
 
         jLabel12.setBackground(new java.awt.Color(0, 0, 0));
-        jLabel12.setForeground(new java.awt.Color(0, 0, 0));
         jLabel12.setText("CPF:");
 
         btnSalvar.setBackground(new java.awt.Color(102, 255, 102));
-        btnSalvar.setForeground(new java.awt.Color(0, 0, 0));
         btnSalvar.setText("Salvar");
         btnSalvar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -211,7 +200,6 @@ public class CadastroClientes extends javax.swing.JFrame {
         });
 
         jLabel13.setBackground(new java.awt.Color(0, 0, 0));
-        jLabel13.setForeground(new java.awt.Color(0, 0, 0));
         jLabel13.setText("RG:");
 
         try {
@@ -242,7 +230,6 @@ public class CadastroClientes extends javax.swing.JFrame {
             ex.printStackTrace();
         }
 
-        jLabel10.setForeground(new java.awt.Color(0, 0, 0));
         jLabel10.setText("Pesquisar cliente por nome:");
 
         txtPesquisaNome.addActionListener(new java.awt.event.ActionListener() {
@@ -252,7 +239,6 @@ public class CadastroClientes extends javax.swing.JFrame {
         });
 
         jLabel15.setBackground(new java.awt.Color(0, 0, 0));
-        jLabel15.setForeground(new java.awt.Color(0, 0, 0));
         jLabel15.setText("Excluir Cliente:");
 
         btnExcluir.setBackground(new java.awt.Color(255, 51, 51));
@@ -414,13 +400,13 @@ public class CadastroClientes extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 411, Short.MAX_VALUE))
+                .addGap(0, 1, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 184, Short.MAX_VALUE))
+                .addGap(0, 1, Short.MAX_VALUE))
         );
 
         pack();
@@ -456,7 +442,9 @@ public class CadastroClientes extends javax.swing.JFrame {
         Cliente cliente = new Cliente();
         ClienteDAO dao = new ClienteDAO();
         int resposta;
+
         //Verificando se as caixas de texto estão preenchidas para inserção de novo cadastro
+        
         if (txtNome.getText().trim().isEmpty()) {
             JOptionPane.showMessageDialog(this, "O campo 'Nome' precisa ser preenchido!", "Erro", JOptionPane.ERROR_MESSAGE);
             return;
@@ -475,9 +463,21 @@ public class CadastroClientes extends javax.swing.JFrame {
         } else {
             JOptionPane.showMessageDialog(this, "Campos preenchidos corretamente!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
         }
+        
+        //Convertendo a data para um formato, garantindo que a variável dataConvertida esteja visível para todo o método
+        
+        Date dataConvertida = null;
+        SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
+
+        try {
+            dataConvertida = formato.parse(fmtTxtData.getText());
+        } catch (ParseException ex) {
+            JOptionPane.showMessageDialog(this, "Data inválida! Use o formato dd/MM/yyyy.", "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
         cliente.setNome(txtNome.getText());
-        cliente.setData(fmtTxtData.getText());
+        cliente.setData(dataConvertida);
         cliente.setRg(txtRg.getText());
         cliente.setCpf(txtCpf.getText());
         cliente.setTelefone(ftdTxtTelefone.getText());

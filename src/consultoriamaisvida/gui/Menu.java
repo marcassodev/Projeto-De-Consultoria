@@ -9,6 +9,7 @@ import java.awt.event.ActionListener;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import javax.swing.Timer;
+import consultoriamaisvida.gui.CadastroClientes;
 
 /**
  *

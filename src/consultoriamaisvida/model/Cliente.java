@@ -1,10 +1,12 @@
 package consultoriamaisvida.model;
 
+import java.util.Date;
+
 public class Cliente {
 
     String nome;
     int id;
-    String data;
+    Date data;
     String rg;
     String cpf;
     String telefone;
@@ -25,11 +27,11 @@ public class Cliente {
         return id;
     }
 
-    public String getData() {
+    public Date getData() {
         return data;
     }
 
-    public void setData(String data) {
+    public void setData(Date data) {
         this.data = data;
     }
 

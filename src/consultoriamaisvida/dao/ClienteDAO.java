@@ -10,8 +10,6 @@ import java.sql.Connection;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 /**
  *
@@ -24,18 +22,15 @@ ela é responsável por realizar as operações no banco de dados.
 */
 
 public class ClienteDAO {
-    private static final DateTimeFormatter FORMATTER_BANCO = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    private static final DateTimeFormatter FORMATTER_INTERFACE = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     
-     /*Método para cadastrar uma consultoria no banco.*/
+     /*Método para cadastrar um cliente no banco.*/
     public int cadastrarCliente(Cliente cliente) throws SQLException {
         String sql = "INSERT INTO clientes (nome, data, rg, cpf, telefone) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = ConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, cliente.getNome());
-            LocalDate data = LocalDate.parse(cliente.getData(), FORMATTER_INTERFACE);
-            ps.setString(2, data.format(FORMATTER_BANCO));
+            ps.setDate(2, new java.sql.Date(cliente.getData().getTime()));
             ps.setString(3, cliente.getRg());
             ps.setString(4, cliente.getCpf());
             ps.setString(5, cliente.getTelefone());
@@ -59,8 +54,7 @@ public class ClienteDAO {
                     Cliente c = new Cliente();
                     c.setId(rs.getInt("id"));
                     c.setNome(rs.getString("nome"));
-                    LocalDate data = LocalDate.parse(rs.getString("data"), FORMATTER_BANCO);
-                    c.setData(data.format(FORMATTER_INTERFACE));
+                    c.setData(rs.getDate("data"));
                     c.setRg(rs.getString("rg"));
                     c.setCpf(rs.getString("cpf"));
                     c.setTelefone(rs.getString("telefone"));
